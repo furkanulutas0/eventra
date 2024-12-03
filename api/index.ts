@@ -18,6 +18,7 @@ app.use("/api", router);
 router.use("/auth", authRouter ); // Auth Route
 
 
+
 // Start server
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost:${port}`);
