@@ -13,7 +13,7 @@ const userSlice = createSlice({
     signInSuccess: (state, action) => {
       state.currentUser = action.payload;
       state.message = null;
-      state.expiresAt = Date.now() + 1000 * 60 * 60; // 1 saat
+      state.expiresAt = Date.now() + 1000 * 60 * 60; // 1 hour
     },
     signInFailure: (state, action) => {
       state.message = action.payload;

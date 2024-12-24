@@ -8,9 +8,9 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./api",
-    "baseUrl": "./api",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"] // Create the alias
+      "@/*": ["api/*"] // Create the alias
     },
   },
   "include": ["api/**/*.ts"],

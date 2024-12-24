@@ -4,11 +4,12 @@ import storage from "redux-persist/lib/storage";
 import startPointReducer from "./startPoint/startPointSlice.ts";
 import userReducer from "./user/userSlice";
 
+// Define RootState type
+export type RootState = ReturnType<typeof rootReducer>;
 
 const rootReducer = combineReducers({
   user: userReducer,
   startPoint: startPointReducer
-  
 });
 
 const persistConfig = {

@@ -1,5 +1,8 @@
-﻿import express, { Express } from "express";
-import authRouter from './routes/auth/authRouter';
+﻿
+import express, { Express } from "express";
+import authRouter from "./routes/auth/authRouter";
+import eventRouter from "./routes/event/eventRouter";
+import userRouter from "./routes/user/userRouter";
 import apiAuthentication from "./utils/middleware/apiAuthentication";
 import errorHandler from "./utils/middleware/error.handler"; // Import the error handler
 
@@ -16,8 +19,8 @@ app.use(errorHandler);
 app.use("/api", router);
 
 router.use("/auth", authRouter ); // Auth Route
-
-
+router.use("/user", userRouter ); // User Route
+router.use("/event", eventRouter ); // Event Route
 
 // Start server
 app.listen(port, () => {

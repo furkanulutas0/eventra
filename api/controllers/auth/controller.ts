@@ -1,17 +1,32 @@
 ﻿import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
-import { supabase } from "./../../utils/supabase";
+import errorHandler from "../../utils/middleware/error.handler";
+import { supabase } from "../../utils/supabase";
 
 class AuthController {
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
-    const { username, email, password, vPassword } = req.body;
+    const { email, password, name, surname } = req.body;
 
     const userRequest = {
-      username,
       email,
       password,
-      // vPassword,
+      name,
+      surname
     };
+
+    try {
+      const { data: emailData, error: emailError } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", userRequest.email);
+      console.log(emailData);
+      if (emailError) throw emailError;
+      if (emailData.length > 0) {
+        throw new Error("Bu email zaten kayıtlı!");
+      }
+    } catch (error) {
+      return errorHandler(error, req, res, next);
+    }
 
     try {
       const { data: emailData, error: emailError } = await supabase
@@ -28,20 +43,6 @@ class AuthController {
     }
 
     try {
-      const { data: usernameData, error: usernameError } = await supabase
-        .from("users")
-        .select("username")
-        .eq("username", userRequest.username);
-      console.log(usernameData);
-      if (usernameError) throw usernameError;
-      if (usernameData.length > 0) {
-        throw new Error("Bu username zaten kayıtlı!");
-      }
-    } catch (error) {
-      return next(error);
-    }
-
-    try {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(userRequest.password, salt);
 
@@ -50,10 +51,11 @@ class AuthController {
       }
 
       const { data, error } = await supabase.from("users").insert({
-        username: userRequest.username,
         email: userRequest.email,
         password: hashedPassword,
-      });
+        name: userRequest.name,
+        surname: userRequest.surname
+      }).select("uuid");
 
       if (error) throw error;
 
@@ -85,7 +87,7 @@ class AuthController {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("email, password")
+        .select("*")
         .eq("email", userRequest.email);
       if (!data || data.length === 0) throw error;
 
@@ -98,6 +100,7 @@ class AuthController {
       res.status(201).json({
         sucess: true,
         message: "User başarıyla giriş yaptı.",
+        data: data
       });
     } catch (error) {
       return next(error);

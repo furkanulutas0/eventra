@@ -1,15 +1,16 @@
 import { Provider } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import SignIn from "./auth/SignIn";
-import SignUp from "./auth/SignUp";
-import Navbar from "./components/Navbar";
+import { Navbar } from "./components/Navbar";
 import PrivateRoute from "./components/routes/PrivateRoute";
-import Dashboard from "./dashboard/Dashboard";
-import EventCreate from "./event/EventCreate.tsx";
-import EventShare from "./event/EventShare.tsx";
-import EventStatus from "./event/EventStatus.tsx";
+import { ThemeProvider } from "./components/theme-provider.tsx";
 import Home from "./Home";
-import Profile from "./profile/Profile.tsx";
+import SignIn from "./pages/auth/SignIn.tsx";
+import SignUp from "./pages/auth/SignUp.tsx";
+import Dashboard from "./pages/dashboard/Dashboard.tsx";
+import EventCreate from "./pages/event/EventCreate.tsx";
+import EventShare from "./pages/event/EventShare.tsx";
+import EventStatus from "./pages/event/EventStatus.tsx";
+import Profile from "./pages/profile/Profile.tsx";
 import { store } from "./redux/store.ts";
 
 function App() {
@@ -17,12 +18,14 @@ function App() {
 
   return (
     <>
+    <ThemeProvider>
       <Provider store={store}>
-        <Navbar />
         <BrowserRouter>
+        <Navbar />
           <AppRoutes />
         </BrowserRouter>
       </Provider>
+      </ThemeProvider>
     </>
   );
 }
