@@ -1,5 +1,6 @@
 import { Provider } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster } from 'sonner';
 import { Navbar } from "./components/Navbar";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import { ThemeProvider } from "./components/theme-provider.tsx";
@@ -25,6 +26,7 @@ function App() {
           <AppRoutes />
         </BrowserRouter>
       </Provider>
+      <Toaster richColors />
       </ThemeProvider>
     </>
   );
@@ -48,7 +50,7 @@ function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/event/share" element={<EventShare />} />
+      <Route path="/event/share/:eventId" element={<EventShare />} />
       <Route path="/event/status" element={<EventStatus />} />
 
       {/* Kullanıcı giriş yapmadan erişemeyeceği alanlar. */}

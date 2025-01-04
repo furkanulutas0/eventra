@@ -11,13 +11,21 @@ import { RootState } from "../../redux/store"
 interface Event {
   id: string
   creator_id: string
-  event_name: string
+  type: "1:1" | "group"
+  name: string
   description: string
   location: string
-  start_date: string
-  end_date: string
-  duration_minute: number
-  status: string | null
+  status: "pending" | "scheduled" | "completed" | "cancelled"
+  duration: number
+  participant_count: number
+  event_dates: Array<{
+    id: string
+    date: string
+    event_time_slots: Array<{
+      start_time: string
+      end_time: string
+    }>
+  }>
 }
 
 export default function Dashboard() {
@@ -27,20 +35,21 @@ export default function Dashboard() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const user = useSelector((state: RootState) => state.user.currentUser)
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        if (user?.uuid) {
-          const response = await getEventsByUser(user.uuid)
-          setEvents(response.data)
-        }
-      } catch (error) {
-        console.error("Failed to fetch events:", error)
-      } finally {
-        setLoading(false)
+  const fetchEvents = async () => {
+    try {
+      if (user?.uuid) {
+        setLoading(true)
+        const response = await getEventsByUser(user.uuid)
+        setEvents(response.data)
       }
+    } catch (error) {
+      console.error("Failed to fetch events:", error)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchEvents()
   }, [user?.uuid])
 
@@ -67,13 +76,26 @@ export default function Dashboard() {
               {loading ? (
                 <div>Loading events...</div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
                   {events.map((event) => (
                     <EventCard
                       key={event.id}
-                      title={event.event_name}
-                      date={new Date(event.start_date).toLocaleDateString()}
+                      id={event.id}
+                      title={event.name}
+                      type={event.type}
                       description={event.description}
+                      location={event.location}
+                      dateTimeSlots={event.event_dates?.map(date => ({
+                        date: date.date,
+                        timeSlots: date.event_time_slots.map(slot => ({
+                          startTime: slot.start_time,
+                          endTime: slot.end_time
+                        }))
+                      })) || []}
+                      status={event.status}
+                      duration={event.duration}
+                      participantCount={event.participant_count}
+                      onStatusUpdate={fetchEvents}
                     />
                   ))}
                 </div>
@@ -109,6 +131,7 @@ export default function Dashboard() {
       <CreateEventModal 
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onEventCreated={fetchEvents}
       />
     </div>
   )
