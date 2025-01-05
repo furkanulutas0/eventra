@@ -1,17 +1,13 @@
 ﻿import express, { Express } from "express";
-import path from "path";
 import authRouter from "./routes/auth/authRouter";
 import eventRouter from "./routes/event/eventRouter";
 import userRouter from "./routes/user/userRouter";
 import apiAuthentication from "./utils/middleware/apiAuthentication";
 import errorHandler from "./utils/middleware/error.handler";
 
-const __dirname = path.resolve();
-
 const app: Express = express();
 const port = process.env.PORT || 3000;
 const router = express.Router();
-
 
 // Middleware
 app.use(express.json());
@@ -23,17 +19,15 @@ router.use("/auth", authRouter);
 router.use("/user", userRouter);
 router.use("/event", eventRouter);
 
-// Serve static files from the React app
-
-// Handle React routing, return all requests to React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-});
-  
-// Error handler should be last
+// Error handler
 app.use(errorHandler);
 
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// Export for Vercel
+export default app;
+
+// Start server if not in Vercel
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}

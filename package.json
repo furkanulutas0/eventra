@@ -2,12 +2,12 @@
   "name": "eventra",
   "version": "1.0.0",
   "description": "",
-  "main": "api/index.js",
+  "main": "api/index.ts",
   "scripts": {
-    "build": "tsc && pnpm install && cd client && pnpm install && pnpm build",
+    "build": "pnpm install && pnpm install --prefix client && pnpm run build --prefix client",
     "start": "node dist/index.js",
     "dev": "nodemon api/index.ts",
-    "postinstall": "cd client && pnpm install"
+    "vercel-build": "cd client && pnpm install && pnpm build"
   },
   "keywords": [],
   "author": "",
