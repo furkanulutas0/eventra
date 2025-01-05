@@ -4,14 +4,10 @@
     "module": "commonjs",
     "outDir": "./dist",
     "rootDir": "./api",
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "allowJs": true,
-    "checkJs": false,
-    "noEmitOnError": false
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["api/**/*"],
   "exclude": ["node_modules", "client"]
