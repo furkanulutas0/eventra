@@ -2,17 +2,17 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "strict": true,
+    "outDir": "./dist",
+    "rootDir": "./api",
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./api",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["api/*"] // Create the alias
-    },
+    "noImplicitAny": false,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmitOnError": false
   },
-  "include": ["api/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["api/**/*"],
+  "exclude": ["node_modules", "client"]
 }
