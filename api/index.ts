@@ -6,9 +6,12 @@ import userRouter from "./routes/user/userRouter";
 import apiAuthentication from "./utils/middleware/apiAuthentication";
 import errorHandler from "./utils/middleware/error.handler";
 
+const __dirname = path.resolve();
+
 const app: Express = express();
 const port = process.env.PORT || 3000;
 const router = express.Router();
+
 
 // Middleware
 app.use(express.json());
@@ -21,13 +24,12 @@ router.use("/user", userRouter);
 router.use("/event", eventRouter);
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')));
 
 // Handle React routing, return all requests to React app
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
 });
-
+  
 // Error handler should be last
 app.use(errorHandler);
 
