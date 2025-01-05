@@ -8,5 +8,7 @@ eventRouter.post("/createEvent", eventController.addEvent);
 eventRouter.get("/getEventsByUser", eventController.getEventByUser);
 eventRouter.patch("/updateStatus", eventController.updateEventStatus);
 eventRouter.post("/submitAvailability", eventController.submitAvailability);
+eventRouter.delete("/deleteEvent/:event_id", eventController.deleteEvent);
+eventRouter.delete('/deleteParticipantAvailability', eventController.deleteParticipantAvailability);
 
 export default eventRouter;

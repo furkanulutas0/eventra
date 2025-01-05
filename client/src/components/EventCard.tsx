@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
@@ -48,13 +49,10 @@ export function EventCard({
   onStatusUpdate
 }: EventCardProps) {
   const [showPublishDialog, setShowPublishDialog] = useState(false)
+  const navigate = useNavigate()
 
   const handleViewDetails = () => {
-    if (status === "pending") {
-      setShowPublishDialog(true)
-    } else {
-      console.log("View details for:", id)
-    }
+    navigate(`/event/details/${id}`)
   }
 
   const handlePublish = async () => {

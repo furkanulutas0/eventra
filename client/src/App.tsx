@@ -1,16 +1,17 @@
+import { ThemeProvider } from "@/components/theme-provider";
 import { Provider } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from 'sonner';
 import { Navbar } from "./components/Navbar";
 import PrivateRoute from "./components/routes/PrivateRoute";
-import { ThemeProvider } from "./components/theme-provider.tsx";
 import Home from "./Home";
 import SignIn from "./pages/auth/SignIn.tsx";
 import SignUp from "./pages/auth/SignUp.tsx";
 import Dashboard from "./pages/dashboard/Dashboard.tsx";
 import EventCreate from "./pages/event/EventCreate.tsx";
+import EventDetails from "./pages/event/EventDetails";
 import EventShare from "./pages/event/EventShare.tsx";
-import EventStatus from "./pages/event/EventStatus.tsx";
+import EventStats from "./pages/event/EventStats.tsx";
 import Profile from "./pages/profile/Profile.tsx";
 import { store } from "./redux/store.ts";
 
@@ -18,8 +19,7 @@ function App() {
   //const dispatch = useDispatch();
 
   return (
-    <>
-    <ThemeProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Provider store={store}>
         <BrowserRouter>
         <Navbar />
@@ -27,8 +27,7 @@ function App() {
         </BrowserRouter>
       </Provider>
       <Toaster richColors />
-      </ThemeProvider>
-    </>
+    </ThemeProvider>
   );
 }
 
@@ -51,13 +50,15 @@ function AppRoutes() {
       <Route path="/login" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/event/share/:eventId" element={<EventShare />} />
-      <Route path="/event/status" element={<EventStatus />} />
+      <Route path="/event/status" element={<EventStats />} />
+      <Route path="/event/stats/:eventId" element={<EventStats />} />
 
       {/* Kullanıcı giriş yapmadan erişemeyeceği alanlar. */}
       <Route element={<PrivateRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/event/create-new-event" element={<EventCreate />} />
+        <Route path="/event/details/:eventId" element={<EventDetails />} />
       </Route>
     </Routes>
   );

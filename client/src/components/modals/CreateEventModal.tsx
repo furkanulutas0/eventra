@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { RootState } from "@/redux/store"
 import { format } from "date-fns"
@@ -43,6 +44,8 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const user = useSelector((state: RootState) => state.user.currentUser)
+  const [isAnonymousAllowed, setIsAnonymousAllowed] = useState(false)
+  const [canMultipleVote, setCanMultipleVote] = useState(false)
   
   // Initial form state
   const initialFormState: EventFormData = {
@@ -218,7 +221,9 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
         setIsLoading(true);
         const response = await createEvent({
           ...formData,
-          creator_id: user?.uuid
+          creator_id: user?.uuid,
+          isAnonymousAllowed,
+          can_multiple_vote: canMultipleVote
         });
         onEventCreated?.();
         handleClose();
@@ -298,6 +303,7 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
           </button>
         ))}
       </div>
+      
     </>
   )
 
@@ -341,6 +347,37 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
             placeholder="Enter location"
           />
         </div>
+        <div className="py-[2px] opacity-50 w-full bg-gray-400 rounded-md"></div>
+        {formData.type === 'group' && (
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="anonymous"
+                checked={isAnonymousAllowed}
+                onCheckedChange={(checked) => setIsAnonymousAllowed(checked as boolean)}
+              />
+              <label
+                htmlFor="anonymous"
+                className="text-sm text-muted-foreground"
+              >
+                Allow anonymous responses
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="multipleVotes"
+                checked={canMultipleVote}
+                onCheckedChange={(checked) => setCanMultipleVote(checked as boolean)}
+              />
+              <label
+                htmlFor="multipleVotes"
+                className="text-sm text-muted-foreground"
+              >
+                Allow participants to select multiple time slots
+              </label>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )

@@ -17,6 +17,7 @@ interface CreateEventRequest {
   location: string;
   dateTimeSlots: DateTimeSlot[];
   creator_id: string;
+  is_anonymous_allowed: boolean;
 }
 
 interface ParticipantAvailability {
@@ -75,3 +76,23 @@ export async function submitParticipantAvailability(data: ParticipantAvailabilit
     throw new Error(error.response?.data?.message || "Failed to submit availability.");
   }
 }
+
+export async function deleteEvent(eventId: string) {
+  try {
+    const response = await axios.delete(`/api/event/deleteEvent/${eventId}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to delete event.");
+  }
+}
+
+export const deleteParticipantAvailability = async (email: string, eventId: string) => {
+  try {
+    const response = await axios.delete(`/api/event/deleteParticipantAvailability`, {
+      data: { email, eventId }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to delete participant availability.");
+  }
+};

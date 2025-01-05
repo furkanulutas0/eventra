@@ -17,14 +17,17 @@ CREATE TABLE IF NOT EXISTS public.event_participants
 (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     event_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    user_id uuid NOT NULL,
+    user_id uuid,
     status character varying(20) COLLATE pg_catalog."default" DEFAULT 'pending'::character varying,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     version integer DEFAULT 1,
     is_anonymous boolean DEFAULT false,
     email text COLLATE pg_catalog."default",
+    participant_name text COLLATE pg_catalog."default",
+    participant_email text COLLATE pg_catalog."default",
     CONSTRAINT event_participants_pkey PRIMARY KEY (id),
+    CONSTRAINT event_participants_event_id_email_key UNIQUE (event_id, participant_email),
     CONSTRAINT event_participants_event_id_user_id_key UNIQUE (event_id, user_id)
 );
 
@@ -73,6 +76,8 @@ CREATE TABLE IF NOT EXISTS public.events
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     share_url text COLLATE pg_catalog."default",
     is_anonymous_allowed boolean DEFAULT false,
+    deleted boolean DEFAULT false,
+    can_multiple_vote boolean DEFAULT true,
     CONSTRAINT events_pkey PRIMARY KEY (id),
     CONSTRAINT events_share_url_key UNIQUE (share_url)
 );
@@ -124,7 +129,7 @@ ALTER TABLE IF EXISTS public.event_participants
     ADD CONSTRAINT event_participants_user_id_fkey FOREIGN KEY (user_id)
     REFERENCES public.users (uuid) MATCH SIMPLE
     ON UPDATE NO ACTION
-    ON DELETE NO ACTION;
+    ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS idx_event_participants_email
     ON public.event_participants(user_id);
 

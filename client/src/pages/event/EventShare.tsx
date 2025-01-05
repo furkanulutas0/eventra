@@ -1,14 +1,16 @@
-﻿import { getEvent, submitParticipantAvailability } from "@/api/event.api"
+﻿import { deleteParticipantAvailability, getEvent, submitParticipantAvailability } from "@/api/event.api"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { Globe, Users2 } from "lucide-react"
+import { Clock, Globe, Users2 } from "lucide-react"
 import { useEffect, useState } from "react"
-import { toast } from "react-hot-toast"
 import { useParams } from "react-router-dom"
+import { toast } from "sonner"
 
 interface TimeSlot {
   id: string
@@ -39,18 +41,41 @@ interface Event {
   share_url: string
   is_anonymous_allowed: boolean
   event_dates: DateSlot[]
-  event_schedule: null | any
-  event_participants: any[]
+  event_schedule: EventSchedule | null
+  event_participants: EventParticipant[]
+  event_votes: EventVote[]
+  can_multiple_vote: boolean;
 }
 
-// Add interface for participant submission
-interface ParticipantSubmission {
-  name: string
+interface EventParticipant {
+  id: string
+  event_id: string
+  user_id: string
+  status: string
+  is_anonymous: boolean
   email: string
-  isAnonymous: boolean
-  eventId: string
-  timeSlotIds: string[]
-  votes: Record<string, boolean>
+  user: {
+    name: string
+    email: string
+  }
+  participant_availability: ParticipantAvailability[]
+}
+
+interface EventVote {
+  id: string
+  event_id: string
+  voter_email: string
+  is_anonymous: boolean
+  voted_at: string
+}
+
+interface ParticipantAvailability {
+  id: string
+  participant_id: string
+  time_slot_id: string
+  vote: boolean
+  created_at: string
+  updated_at: string
 }
 
 export default function EventShare() {
@@ -77,7 +102,7 @@ export default function EventShare() {
         if (eventId) {
           setLoading(true)
           const response = await getEvent(eventId)
-          setEvent(response.data[0])
+          setEvent(response.data)
         }
       } catch (error) {
         console.error("Failed to fetch event:", error)
@@ -90,41 +115,68 @@ export default function EventShare() {
   }, [eventId])
 
   const handleTimeSelect = (timeSlotId: string) => {
-    setSelectedSlots(prev => ({
-      ...prev,
-      [timeSlotId]: !prev[timeSlotId]
-    }))
+    setSelectedSlots(prev => {
+      const isSelected = !prev[timeSlotId];
+      
+      if (!event.can_multiple_vote && isSelected) {
+        // If multiple votes are not allowed, clear other selections
+        const newSlots = Object.keys(prev).reduce((acc, key) => ({
+          ...acc,
+          [key]: false
+        }), {});
+        return {
+          ...newSlots,
+          [timeSlotId]: true
+        };
+      }
+
+      return {
+        ...prev,
+        [timeSlotId]: isSelected
+      };
+    });
   }
 
   const handleSubmit = async () => {
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       const selectedTimeSlots = Object.entries(selectedSlots)
         .filter(([_, selected]) => selected)
         .map(([timeSlotId]) => timeSlotId);
 
-      await submitParticipantAvailability({
-        name,
+      const response = await submitParticipantAvailability({
+        name: isAnonymous ? 'Anonymous' : name,
         email,
         isAnonymous,
         eventId: event!.id,
-        timeSlotIds: selectedTimeSlots,
-        votes
+        timeSlotIds: selectedTimeSlots
       });
 
-      setSubmitted(true)
-      toast.success("Your availability has been submitted successfully!");
+      if (response.status === "duplicate") {
+        // Store the current submission data
+        setPendingSubmission({
+          name,
+          email,
+          timeSlotIds: selectedTimeSlots
+        });
+        // Show the update dialog
+        setShowUpdateDialog(true);
+        return;
+      }
+
+      setSubmitted(true);
+      toast.success("Your availability has been submitted successfully");
       
       // Clear form
-      setSelectedSlots({})
-      setName("")
-      setEmail("")
-      setPendingSubmission(null)
+      setSelectedSlots({});
+      setName("");
+      setEmail("");
+      setPendingSubmission(null);
     } catch (error) {
       toast.error("Failed to submit availability. Please try again.");
       console.error("Error submitting availability:", error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   };
 
@@ -133,17 +185,32 @@ export default function EventShare() {
     
     setIsSubmitting(true);
     try {
-      await submitAvailability(
-        pendingSubmission.name,
-        pendingSubmission.email,
-        pendingSubmission.timeSlotIds
-      );
+      // Delete existing participant's availability
+      await deleteParticipantAvailability(email, event!.id);
+      
+      // Submit new availability
+      await submitParticipantAvailability({
+        name: isAnonymous ? 'Anonymous' : pendingSubmission.name,
+        email: pendingSubmission.email,
+        isAnonymous,
+        eventId: event!.id,
+        timeSlotIds: pendingSubmission.timeSlotIds
+      });
+
+      toast.success("Availability updated successfully");
+      setShowUpdateDialog(false);
+      setSubmitted(true);
+      
+      // Clear form
+      setSelectedSlots({});
+      setName("");
+      setEmail("");
+      setPendingSubmission(null);
     } catch (error) {
       toast.error("Failed to update availability. Please try again.");
       console.error("Error updating availability:", error);
     } finally {
       setIsSubmitting(false);
-      setShowUpdateDialog(false);
     }
   };
 
@@ -160,6 +227,16 @@ export default function EventShare() {
     return `${hour < 10 ? '0' : ''}${hour}:${minutes}`
   }
 
+  const handleAnonymousChange = (checked: boolean) => {
+    setIsAnonymous(checked);
+    if (checked) {
+      //setName("Anonymous");
+      //setEmail(""); // Clear email since it's not needed
+    } else {
+      setName(""); // Reset name when unchecked
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>
   }
@@ -168,16 +245,42 @@ export default function EventShare() {
     return <div className="flex items-center justify-center min-h-screen">Event not found</div>
   }
 
+  if (event?.status === "completed") {
+    return (
+      <div className="min-h-screen bg-background pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-xl mx-auto">
+          <Card className="p-6">
+            <div className="space-y-4 text-center">
+              <div className="p-3 bg-yellow-500/10 text-yellow-600 rounded-md inline-block mx-auto">
+                <Clock className="h-6 w-6" />
+              </div>
+              <h1 className="text-2xl font-semibold">{event.name}</h1>
+              <p className="text-muted-foreground">
+                This poll has ended and is no longer accepting responses.
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = `/event/stats/${event.id}`}
+              >
+                View Results
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-background pt-20 pb-8 px-4 sm:px-6 lg:px-8">
         <Card className="max-w-2xl mx-auto p-6 space-y-6 shadow-lg">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-semibold tracking-tight">
                 {event.name}
               </h1>
-              <div className="flex items-center gap-2 text-sm bg-gray-100 px-2.5 py-1.5 rounded-md">
+              <div className="flex items-center gap-2 text-sm bg-gray-100 dark:bg-gray-800 px-2.5 py-1.5 rounded-md">
                 {event.type === "group" ? (
                   <Users2 className="h-4 w-4" />
                 ) : null}
@@ -207,6 +310,21 @@ export default function EventShare() {
             </h2>
             
             <div className="space-y-6">
+              {event.is_anonymous_allowed && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="anonymous"
+                    checked={isAnonymous}
+                    onCheckedChange={handleAnonymousChange}
+                  />
+                  <label
+                    htmlFor="anonymous"
+                    className="text-sm font-medium leading-none"
+                  >
+                    Submit anonymously
+                  </label>
+                </div>
+              )}
               {event.event_dates.map((dateSlot) => (
                 <div key={dateSlot.id} className="space-y-3">
                   <h3 className="text-sm font-medium">
@@ -216,18 +334,16 @@ export default function EventShare() {
                     {dateSlot.event_time_slots.map((timeSlot) => (
                       <Button
                         key={timeSlot.id}
-                        variant={selectedSlots[timeSlot.id] ? "blue" : "outline"}
+                        variant={selectedSlots[timeSlot.id] ? "default" : "outline"}
                         className={cn(
                           "justify-center h-10 px-3 text-sm transition-colors",
-                          selectedSlots[timeSlot.id] 
-                            ? "bg-blue-600 text-white hover:bg-blue-700" 
-                            : "hover:border-blue-600/50 hover:text-blue-600"
+                          selectedSlots[timeSlot.id] && "bg-primary text-primary-foreground"
                         )}
                         onClick={() => handleTimeSelect(timeSlot.id)}
                       >
-                        {formatTime(timeSlot.start_time)}
+                        {`${timeSlot.start_time.slice(0, 5)} - ${timeSlot.end_time.slice(0, 5)}`}
                         {selectedSlots[timeSlot.id] && (
-                          <span className="ml-1.5 text-white">✓</span>
+                          <span className="ml-1.5">✓</span>
                         )}
                       </Button>
                     ))}
@@ -239,45 +355,39 @@ export default function EventShare() {
             <div className="space-y-4 border-t pt-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Your Name
-                  </label>
-                  <input
+                  <Label htmlFor="name">Your Name</Label>
+                  <Input
+                    id="name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full h-10 px-3 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isAnonymous}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Email
-                  </label>
-                  <input
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-10 px-3 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isAnonymous}
                     required
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-2 pt-4">
-              {submitted && (
-                <p className="text-sm text-green-600 font-medium">
-                  Thank you! Your availability has been submitted successfully.
-                </p>
-              )}
               <Button 
                 variant="blue"
                 className={cn(
                   "h-10 px-4 text-sm font-medium min-w-[140px]",
                   isSubmitting && "opacity-80"
                 )}
-                disabled={!name || !email || Object.values(selectedSlots).filter(Boolean).length === 0 || isSubmitting}
+                disabled={
+                  (!isAnonymous && (!name || !email)) || // Only require name and email if not anonymous
+                  Object.values(selectedSlots).filter(Boolean).length === 0 || 
+                  isSubmitting
+                }
                 onClick={handleSubmit}
               >
                 {isSubmitting ? (
@@ -317,22 +427,6 @@ export default function EventShare() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {event?.is_anonymous_allowed && (
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="anonymous"
-            checked={isAnonymous}
-            onCheckedChange={(checked) => setIsAnonymous(checked as boolean)}
-          />
-          <label
-            htmlFor="anonymous"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Submit anonymously
-          </label>
-        </div>
-      )}
     </>
   )
 }
