@@ -12,7 +12,7 @@ const _dirname = path.resolve();
 
 
 const app: Express = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const router = express.Router();
 
 // Middleware to parse JSON bodies
