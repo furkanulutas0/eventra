@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Clock, Globe, Users2 } from "lucide-react"
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 
 interface TimeSlot {
@@ -148,6 +148,7 @@ export default function EventShare() {
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [votes, setVotes] = useState<Record<string, boolean>>({})
   const [takenSlots, setTakenSlots] = useState<string[]>([])
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -237,6 +238,7 @@ export default function EventShare() {
       setName("");
       setEmail("");
       setPendingSubmission(null);
+      navigate(`/event/stats/${event!.id}`);
     } catch (error) {
       toast.error("Failed to submit availability. Please try again.");
       console.error("Error submitting availability:", error);
