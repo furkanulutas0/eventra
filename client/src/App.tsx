@@ -50,7 +50,6 @@ function AppRoutes() {
       <Route path="/login" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/event/share/:eventId" element={<EventShare />} />
-      <Route path="/event/status" element={<EventStats />} />
       <Route path="/event/stats/:eventId" element={<EventStats />} />
 
       {/* Kullanıcı giriş yapmadan erişemeyeceği alanlar. */}

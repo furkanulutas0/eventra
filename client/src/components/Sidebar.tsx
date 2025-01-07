@@ -5,9 +5,10 @@ import { Button } from "./ui/button";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onPageChange?: (page: string) => void;
+  onCreateEvent?: () => void;
 }
 
-export function Sidebar({ className, onPageChange }: SidebarProps) {
+export function Sidebar({ className, onPageChange, onCreateEvent }: SidebarProps) {
   const [activePage, setActivePage] = useState("Events")
 
   const menuItems = [
@@ -25,7 +26,12 @@ export function Sidebar({ className, onPageChange }: SidebarProps) {
     <div className={cn("pb-12 min-h-screen w-60 border-r", className)}>
       <div className="space-y-4 py-4">
         <div className="px-4 py-2">
-          <Button variant="blue" className="w-full" size="lg">
+          <Button 
+            variant="blue" 
+            className="w-full" 
+            size="lg"
+            onClick={onCreateEvent}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             Create Event
           </Button>

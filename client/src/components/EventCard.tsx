@@ -31,7 +31,16 @@ interface EventCardProps {
     }>
   }>
   status?: "pending" | "active" | "completed" | "cancelled"
-  participantCount?: number
+  participants: Array<{
+    id: string
+    is_anonymous: boolean
+    participant_name?: string
+    participant_email?: string
+    user?: {
+      name: string
+      email: string
+    }
+  }>
   duration?: number
   onStatusUpdate?: () => void
 }
@@ -44,7 +53,7 @@ export function EventCard({
   location,
   dateTimeSlots = [],
   status = "pending",
-  participantCount = 0,
+  participants = [],
   duration = 30,
   onStatusUpdate
 }: EventCardProps) {
@@ -83,6 +92,16 @@ export function EventCard({
       : `${hours}h`
   }
 
+  const getParticipantDisplay = () => {
+    const count = participants.length;
+    if (type === "1:1") {
+      if (count === 0) return "No bookings";
+      if (count === 1) return "1 booking";
+      return `${count} bookings`;
+    }
+    return `${count} participant${count !== 1 ? 's' : ''}`;
+  };
+
   return (
     <>
       <Card className="hover:shadow-md dark:hover:shadow-gray-800 transition-shadow group max-w-sm">
@@ -120,12 +139,10 @@ export function EventCard({
                   <Clock3 className="mr-2 h-4 w-4" />
                   <span>{formatDuration(duration)}</span>
                 </div>
-                {type === "group" && (
-                  <div className="flex items-center text-muted-foreground">
-                    <Users2 className="mr-2 h-4 w-4" />
-                    <span>{participantCount} participants</span>
-                  </div>
-                )}
+                <div className="flex items-center text-muted-foreground">
+                  <Users2 className="mr-2 h-4 w-4" />
+                  <span>{getParticipantDisplay()}</span>
+                </div>
               </div>
             </div>
 

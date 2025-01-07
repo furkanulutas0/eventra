@@ -206,6 +206,22 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
     return false;
   };
 
+  const validate1on1Event = (formData: EventFormData) => {
+    if (formData.type === "1:1") {
+      // Ensure there aren't too many time slots for 1:1 events
+      const totalSlots = formData.dateTimeSlots.reduce(
+        (sum, date) => sum + date.timeSlots.length,
+        0
+      );
+      
+      if (totalSlots > 10) {
+        toast.error("1:1 events can have a maximum of 10 time slots");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleNext = async () => {
     // Check for past dates and time conflicts before moving to overview step
     if (step === 3) {
@@ -217,13 +233,16 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
     }
 
     if (step === 4) {
+      if (!validate1on1Event(formData)) {
+        return;
+      }
       try {
         setIsLoading(true);
         const response = await createEvent({
           ...formData,
           creator_id: user?.uuid,
-          isAnonymousAllowed,
-          can_multiple_vote: canMultipleVote
+          isAnonymousAllowed: formData.type === "group" ? isAnonymousAllowed : false,
+          can_multiple_vote: formData.type === "group" ? canMultipleVote : false
         });
         onEventCreated?.();
         handleClose();
@@ -236,11 +255,7 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
       if (step === 1) {
         setStep(2)
       } else if (step === 2) {
-        if (formData.type === "group") {
-          setStep(3)
-        } else {
-          console.log("1:1 event flow")
-        }
+        setStep(3)
       }
     }
   }
@@ -390,12 +405,39 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
     return compareDate < now;
   };
 
+  const validateTimeSlots = (dateSlot: DateTimeSlot) => {
+    if (formData.type === "1:1") {
+      // For 1:1 events, ensure time slots are at least 30 minutes apart
+      const sortedSlots = [...dateSlot.timeSlots].sort((a, b) => 
+        a.startTime.localeCompare(b.startTime)
+      );
+
+      for (let i = 0; i < sortedSlots.length - 1; i++) {
+        const currentEnd = new Date(`2000-01-01T${sortedSlots[i].endTime}`);
+        const nextStart = new Date(`2000-01-01T${sortedSlots[i + 1].startTime}`);
+        const diffInMinutes = (nextStart.getTime() - currentEnd.getTime()) / 1000 / 60;
+
+        if (diffInMinutes < 30) {
+          toast.error("Time slots must be at least 30 minutes apart for 1:1 events");
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const renderDateTimeSelection = () => (
     <>
       <DialogHeader>
         <DialogTitle className="text-2xl font-semibold">
-          3: Select Dates and Times
+          3: Select {formData.type === "1:1" ? "Available Time Slots" : "Dates and Times"}
         </DialogTitle>
+        {formData.type === "1:1" && (
+          <p className="text-sm text-muted-foreground mt-2">
+            For 1:1 meetings, select specific time slots that you're available. 
+            Each slot should be at least 30 minutes apart.
+          </p>
+        )}
       </DialogHeader>
       <div className="grid grid-cols-[400px,1fr] gap-8 py-4">
         <div className="space-y-4">
@@ -444,13 +486,20 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
           />
         </div>
         <div className="space-y-6 overflow-y-auto pr-2 max-h-[300px]">
-          <Label>Set Time Slots</Label>
+          <Label>
+            {formData.type === "1:1" ? "Available Time Slots" : "Set Time Slots"}
+          </Label>
           {formData.dateTimeSlots.map((dateSlot, dateIndex) => (
             <div key={dateIndex} className="space-y-4 rounded-lg border p-4">
               <div className="flex items-center justify-between border-b pb-2">
                 <h4 className="font-medium">
                   {format(dateSlot.date, "EEEE, MMMM d")}
                 </h4>
+                {formData.type === "1:1" && (
+                  <span className="text-sm text-muted-foreground">
+                    {dateSlot.timeSlots.length} slot{dateSlot.timeSlots.length !== 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
               <div className="space-y-4">
                 {dateSlot.timeSlots.map((timeSlot, timeIndex) => (
@@ -466,13 +515,12 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
                             const newTime = e.target.value;
                             if (!isPastTime(dateSlot.date, newTime)) {
                               handleTimeChange(dateIndex, timeIndex, "startTime", newTime);
+                              validateTimeSlots(dateSlot);
                             } else {
                               toast.error("Cannot select a past time");
                             }
                           }}
                           className="w-full"
-                          disabled={new Date(dateSlot.date).toDateString() === new Date().toDateString() && 
-                            isPastTime(dateSlot.date, timeSlot.startTime)}
                         />
                       </div>
                     </div>
@@ -487,17 +535,16 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
                             const newTime = e.target.value;
                             if (!isPastTime(dateSlot.date, newTime)) {
                               handleTimeChange(dateIndex, timeIndex, "endTime", newTime);
+                              validateTimeSlots(dateSlot);
                             } else {
                               toast.error("Cannot select a past time");
                             }
                           }}
                           className="w-full"
-                          disabled={new Date(dateSlot.date).toDateString() === new Date().toDateString() && 
-                            isPastTime(dateSlot.date, timeSlot.endTime)}
                         />
                       </div>
                     </div>
-                    {dateSlot.timeSlots.length > 1 && (
+                    {(formData.type !== "1:1" || dateSlot.timeSlots.length > 1) && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -509,23 +556,21 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
                     )}
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-2"
-                  onClick={() => addTimeSlot(dateIndex)}
-                >
-                  Add Time Slot
-                </Button>
+                {(!formData.type || formData.type === "group" || 
+                  (formData.type === "1:1" && dateSlot.timeSlots.length < 5)) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => addTimeSlot(dateIndex)}
+                  >
+                    Add Time Slot
+                  </Button>
+                )}
               </div>
             </div>
           ))}
-          {formData.dateTimeSlots.length === 0 && (
-            <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-              Select dates from the calendar to add time slots
-            </div>
-          )}
         </div>
       </div>
     </>
