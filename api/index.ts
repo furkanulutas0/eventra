@@ -8,7 +8,7 @@ import apiAuthentication from "./utils/middleware/apiAuthentication";
 import errorHandler from "./utils/middleware/error.handler"; // Import the error handler
 // Create a single supabase client for interacting with your database
 
-const __dirname = path.resolve();
+const _dirname = path.resolve();
 
 
 const app: Express = express();
@@ -24,10 +24,10 @@ app.use("/api/auth", authRouter ); // Auth Route
 app.use("/api/user", userRouter ); // User Route
 app.use("/api/event", eventRouter ); // Event Route
 
-app.use(express.static(path.join(__dirname, "/client/dist")));
+app.use(express.static(path.join(_dirname, "/client/dist")));
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+  res.sendFile(path.join(_dirname, "client", "dist", "index.html"));
 });
 
 // Start server
