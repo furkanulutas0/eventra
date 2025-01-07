@@ -4,7 +4,7 @@
   "description": "",
   "main": "api/index.js",
   "scripts": {
-    "build": "tsc && npm install && npm install --prefix client && npm run build --prefix client",
+    "build": "npm install && npm install --prefix client && npm run build --prefix client",
     "start": "ts-node api/index.ts",
     "dev": "nodemon api/index.ts"
   },
@@ -29,12 +29,12 @@
     "express": "^4.21.2",
     "framer-motion": "^11.15.0",
     "resend": "^4.0.1",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "@types/express": "^5.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.5"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.10.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
   }
 }
