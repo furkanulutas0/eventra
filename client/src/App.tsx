@@ -16,7 +16,6 @@ import Profile from "./pages/profile/Profile.tsx";
 import { store } from "./redux/store.ts";
 
 function App() {
-  //const dispatch = useDispatch();
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -32,17 +31,6 @@ function App() {
 }
 
 function AppRoutes() {
-  //const location = useLocation();
-
-  // useEffect(() => {
-  //   if (location.pathname === "/login") {
-  //     return;
-  //   }
-  //   if (location.pathname === "/") {
-  //     dispatch(setCurrentUrl("/dashboard"));
-  //   } else dispatch(setCurrentUrl(location.pathname + location.search));
-  // }, [dispatch, location]);
-
   return (
     <Routes>
       {/* Public */}
