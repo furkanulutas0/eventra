@@ -175,7 +175,7 @@ export class EventController {
       const { creator_id } = req.query;
       const { data, error } = await supabase
         .from("events")
-        .select("*")
+        .select(`*, event_participants (id)`)
         .eq("creator_id", creator_id)
         .eq("deleted", false);
 
@@ -212,7 +212,7 @@ export class EventController {
     try {
       const { name, email, isAnonymous, eventId, timeSlotIds } = req.body;
 
-      // Check if event exists and is not completed
+      // First, check if event exists and get its type
       const { data: eventData, error: eventError } = await supabase
         .from("events")
         .select(`
@@ -224,6 +224,12 @@ export class EventController {
               start_time,
               end_time
             )
+          ),
+          event_participants (
+            participant_availability (
+              time_slot_id,
+              vote
+            )
           )
         `)
         .eq("id", eventId)
@@ -231,6 +237,27 @@ export class EventController {
 
       if (eventError) throw eventError;
 
+      // For 1:1 events, check if selected time slots are already taken
+      if (eventData.type === "1:1") {
+        // Get all voted time slots for this event
+        const votedSlots = eventData.event_participants
+          .flatMap((p: { participant_availability: { time_slot_id: string, vote: boolean }[] }) => p.participant_availability)
+          .filter((a: { time_slot_id: string, vote: boolean }) => a.vote)
+          .map((a: { time_slot_id: string, vote: boolean }) => a.time_slot_id);
+
+        // Check if any of the selected slots are already taken
+        const conflictingSlots = timeSlotIds.filter((id: string) => votedSlots.includes(id));
+
+        if (conflictingSlots.length > 0) {
+          res.status(400).json({
+            status: "error",
+            message: "One or more selected time slots are already taken"
+          });
+          return;
+        }
+      }
+
+      // Check if event exists and is not completed
       if (eventData.status === "completed") {
         res.status(403).json({
           status: "error",

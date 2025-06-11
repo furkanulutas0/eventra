@@ -1,37 +1,37 @@
-﻿import express, { Express } from "express";
-import path from "path";
+
+import express, { Express } from "express";
 import authRouter from "./routes/auth/authRouter";
 import eventRouter from "./routes/event/eventRouter";
 import userRouter from "./routes/user/userRouter";
 import apiAuthentication from "./utils/middleware/apiAuthentication";
-import errorHandler from "./utils/middleware/error.handler";
+import errorHandler from "./utils/middleware/error.handler"; // Import the error handler
+import path from "path";
+
+// Create a single supabase client for interacting with your database
 
 const app: Express = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 const router = express.Router();
+const __dirname = path.resolve();
 
-// Middleware
+// Middleware to parse JSON bodies
 app.use(express.json());
 app.use(apiAuthentication);
+app.use(errorHandler);
 app.use("/api", router);
 
-// Routes
-router.use("/auth", authRouter);
-router.use("/user", userRouter);
-router.use("/event", eventRouter);
+router.use("/auth", authRouter ); // Auth Route
+router.use("/user", userRouter ); // User Route
+router.use("/event", eventRouter ); // Event Route
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use(express.static(path.join(__dirname, "client", "dist")));
 
-// Handle React routing, return all requests to React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
 });
 
-// Error handler should be last
-app.use(errorHandler);
 
 // Start server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port http://localhost:${port}`);
 });

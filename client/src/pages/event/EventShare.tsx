@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Clock, Globe, Users2 } from "lucide-react"
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 
 interface TimeSlot {
@@ -78,6 +78,58 @@ interface ParticipantAvailability {
   updated_at: string
 }
 
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const validateSubmission = (
+  isAnonymous: boolean,
+  name: string,
+  email: string,
+  selectedSlots: Record<string, boolean>,
+  event: Event
+): { isValid: boolean; error?: string } => {
+  // Check if any time slots are selected
+  const hasSelectedSlots = Object.values(selectedSlots).some(Boolean);
+  if (!hasSelectedSlots) {
+    return { isValid: false, error: "Please select at least one time slot" };
+  }
+
+  // For non-anonymous submissions, validate name and email
+  if (!isAnonymous) {
+    if (!name.trim()) {
+      return { isValid: false, error: "Please enter your name" };
+    }
+
+    if (!email.trim()) {
+      return { isValid: false, error: "Please enter your email address" };
+    }
+
+    if (!isValidEmail(email)) {
+      return { isValid: false, error: "Please enter a valid email address" };
+    }
+  }
+
+  // For 1:1 events, validate single slot selection
+  if (event.type === "1:1") {
+    const selectedCount = Object.values(selectedSlots).filter(Boolean).length;
+    if (selectedCount > 1) {
+      return { isValid: false, error: "Please select only one time slot for 1:1 events" };
+    }
+  }
+
+  // For group events with multiple votes disabled
+  if (event.type === "group" && !event.can_multiple_vote) {
+    const selectedCount = Object.values(selectedSlots).filter(Boolean).length;
+    if (selectedCount > 1) {
+      return { isValid: false, error: "Multiple time slot selection is not allowed for this event" };
+    }
+  }
+
+  return { isValid: true };
+};
+
 export default function EventShare() {
   const { eventId } = useParams()
   const [event, setEvent] = useState<Event | null>(null)
@@ -95,6 +147,8 @@ export default function EventShare() {
   } | null>(null)
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [votes, setVotes] = useState<Record<string, boolean>>({})
+  const [takenSlots, setTakenSlots] = useState<string[]>([])
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -103,6 +157,14 @@ export default function EventShare() {
           setLoading(true)
           const response = await getEvent(eventId)
           setEvent(response.data)
+
+          if (response.data.type === "1:1") {
+            const taken = response.data.event_participants
+              .flatMap((p: any) => p.participant_availability)
+              .filter((a: any) => a.vote)
+              .map((a: any) => a.time_slot_id)
+            setTakenSlots(taken)
+          }
         }
       } catch (error) {
         console.error("Failed to fetch event:", error)
@@ -139,27 +201,31 @@ export default function EventShare() {
 
   const handleSubmit = async () => {
     try {
+      const validation = validateSubmission(isAnonymous, name, email, selectedSlots, event!);
+      if (!validation.isValid) {
+        toast.error(validation.error);
+        return;
+      }
+
       setIsSubmitting(true);
       const selectedTimeSlots = Object.entries(selectedSlots)
         .filter(([_, selected]) => selected)
         .map(([timeSlotId]) => timeSlotId);
 
       const response = await submitParticipantAvailability({
-        name: isAnonymous ? 'Anonymous' : name,
-        email,
+        name: isAnonymous ? 'Anonymous' : name.trim(),
+        email: email.trim(),
         isAnonymous,
         eventId: event!.id,
         timeSlotIds: selectedTimeSlots
       });
 
       if (response.status === "duplicate") {
-        // Store the current submission data
         setPendingSubmission({
-          name,
-          email,
+          name: name.trim(),
+          email: email.trim(),
           timeSlotIds: selectedTimeSlots
         });
-        // Show the update dialog
         setShowUpdateDialog(true);
         return;
       }
@@ -172,6 +238,7 @@ export default function EventShare() {
       setName("");
       setEmail("");
       setPendingSubmission(null);
+      navigate(`/event/stats/${event!.id}`);
     } catch (error) {
       toast.error("Failed to submit availability. Please try again.");
       console.error("Error submitting availability:", error);
@@ -337,14 +404,17 @@ export default function EventShare() {
                         variant={selectedSlots[timeSlot.id] ? "default" : "outline"}
                         className={cn(
                           "justify-center h-10 px-3 text-sm transition-colors",
-                          selectedSlots[timeSlot.id] && "bg-primary text-primary-foreground"
+                          selectedSlots[timeSlot.id] && "bg-primary text-primary-foreground",
+                          event.type === "1:1" && takenSlots.includes(timeSlot.id) && 
+                            "bg-gray-200 text-gray-500 cursor-not-allowed"
                         )}
                         onClick={() => handleTimeSelect(timeSlot.id)}
+                        disabled={event.type === "1:1" && takenSlots.includes(timeSlot.id)}
                       >
                         {`${timeSlot.start_time.slice(0, 5)} - ${timeSlot.end_time.slice(0, 5)}`}
-                        {selectedSlots[timeSlot.id] && (
-                          <span className="ml-1.5">✓</span>
-                        )}
+                        {selectedSlots[timeSlot.id] && <span className="ml-1.5">✓</span>}
+                        {event.type === "1:1" && takenSlots.includes(timeSlot.id) && 
+                          <span className="ml-1.5">Taken</span>}
                       </Button>
                     ))}
                   </div>
@@ -371,9 +441,24 @@ export default function EventShare() {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      // Optional: Show real-time validation feedback
+                      if (e.target.value && !isValidEmail(e.target.value)) {
+                        e.target.setCustomValidity("Please enter a valid email address");
+                      } else {
+                        e.target.setCustomValidity("");
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value && !isValidEmail(e.target.value)) {
+                        toast.error("Please enter a valid email address");
+                      }
+                    }}
                     disabled={isAnonymous}
                     required
+                    pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                    title="Please enter a valid email address"
                   />
                 </div>
               </div>

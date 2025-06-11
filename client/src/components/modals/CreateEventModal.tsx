@@ -206,6 +206,22 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
     return false;
   };
 
+  const validate1on1Event = (formData: EventFormData) => {
+    if (formData.type === "1:1") {
+      // Ensure there aren't too many time slots for 1:1 events
+      const totalSlots = formData.dateTimeSlots.reduce(
+        (sum, date) => sum + date.timeSlots.length,
+        0
+      );
+      
+      if (totalSlots > 10) {
+        toast.error("1:1 events can have a maximum of 10 time slots");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleNext = async () => {
     // Check for past dates and time conflicts before moving to overview step
     if (step === 3) {
@@ -217,13 +233,16 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
     }
 
     if (step === 4) {
+      if (!validate1on1Event(formData)) {
+        return;
+      }
       try {
         setIsLoading(true);
         const response = await createEvent({
           ...formData,
           creator_id: user?.uuid,
-          isAnonymousAllowed,
-          can_multiple_vote: canMultipleVote
+          isAnonymousAllowed: formData.type === "group" ? isAnonymousAllowed : false,
+          can_multiple_vote: formData.type === "group" ? canMultipleVote : false
         });
         onEventCreated?.();
         handleClose();
@@ -236,11 +255,7 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
       if (step === 1) {
         setStep(2)
       } else if (step === 2) {
-        if (formData.type === "group") {
-          setStep(3)
-        } else {
-          console.log("1:1 event flow")
-        }
+        setStep(3)
       }
     }
   }
@@ -273,15 +288,14 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
         return false
     }
   }
-
   const renderEventTypeSelection = () => (
     <>
       <DialogHeader>
-        <DialogTitle className="text-2xl font-semibold">
+        <DialogTitle className="text-xl sm:text-2xl font-semibold">
           1: Choosing Event Type
         </DialogTitle>
       </DialogHeader>
-      <div className="grid grid-cols-2 gap-4 py-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-6 sm:py-8">
         {eventTypes.map((type) => (
           <button
             key={type.id}
@@ -289,15 +303,15 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
               setFormData(prev => ({ ...prev, type: type.id as EventType }))
             }}
             className={cn(
-              "relative flex flex-col items-center justify-center p-6 rounded-lg border-2 border-muted bg-background transition-all hover:border-primary",
+              "relative flex flex-col items-center justify-center p-4 sm:p-6 rounded-lg border-2 border-muted bg-background transition-all hover:border-primary",
               formData.type === type.id && "border-primary ring-2 ring-primary ring-offset-2"
             )}
           >
-            <div className="mb-4 rounded-full bg-primary/10 p-4">
-              <type.icon className="h-8 w-8 text-primary" />
+            <div className="mb-3 sm:mb-4 rounded-full bg-primary/10 p-3 sm:p-4">
+              <type.icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             </div>
-            <h3 className="text-xl font-semibold">{type.title}</h3>
-            <p className="mt-2 text-center text-sm text-muted-foreground">
+            <h3 className="text-lg sm:text-xl font-semibold">{type.title}</h3>
+            <p className="mt-2 text-center text-xs sm:text-sm text-muted-foreground">
               {type.description}
             </p>
           </button>
@@ -306,17 +320,16 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
       
     </>
   )
-
   const renderBasicDetails = () => (
     <>
       <DialogHeader>
-        <DialogTitle className="text-2xl font-semibold">
+        <DialogTitle className="text-xl sm:text-2xl font-semibold">
           2: Set Basic Event Details
         </DialogTitle>
       </DialogHeader>
-      <div className="space-y-4 py-4">
+      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
         <div className="space-y-2">
-          <Label htmlFor="name">Event Name</Label>
+          <Label htmlFor="name" className="text-sm sm:text-base">Event Name</Label>
           <Input
             id="name"
             name="name"
@@ -324,54 +337,58 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
             onChange={handleInputChange}
             placeholder="Enter event name"
             required
+            className="text-sm sm:text-base"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="detail">Event Detail (optional)</Label>
+          <Label htmlFor="detail" className="text-sm sm:text-base">Event Detail (optional)</Label>
           <Textarea
             id="detail"
             name="detail"
             value={formData.detail}
             onChange={handleInputChange}
             placeholder="Enter event details"
-            className="min-h-[100px]"
+            className="min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="location">Location (optional)</Label>
+          <Label htmlFor="location" className="text-sm sm:text-base">Location (optional)</Label>
           <Input
             id="location"
             name="location"
             value={formData.location}
             onChange={handleInputChange}
             placeholder="Enter location"
+            className="text-sm sm:text-base"
           />
         </div>
         <div className="py-[2px] opacity-50 w-full bg-gray-400 rounded-md"></div>
         {formData.type === 'group' && (
           <div className="space-y-4 mt-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start space-x-2">
               <Checkbox
                 id="anonymous"
                 checked={isAnonymousAllowed}
                 onCheckedChange={(checked) => setIsAnonymousAllowed(checked as boolean)}
+                className="mt-1"
               />
               <label
                 htmlFor="anonymous"
-                className="text-sm text-muted-foreground"
+                className="text-xs sm:text-sm text-muted-foreground leading-relaxed"
               >
                 Allow anonymous responses
               </label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start space-x-2">
               <Checkbox
                 id="multipleVotes"
                 checked={canMultipleVote}
                 onCheckedChange={(checked) => setCanMultipleVote(checked as boolean)}
+                className="mt-1"
               />
               <label
                 htmlFor="multipleVotes"
-                className="text-sm text-muted-foreground"
+                className="text-xs sm:text-sm text-muted-foreground leading-relaxed"
               >
                 Allow participants to select multiple time slots
               </label>
@@ -390,21 +407,46 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
     return compareDate < now;
   };
 
+  const validateTimeSlots = (dateSlot: DateTimeSlot) => {
+    if (formData.type === "1:1") {
+      // For 1:1 events, ensure time slots are at least 30 minutes apart
+      const sortedSlots = [...dateSlot.timeSlots].sort((a, b) => 
+        a.startTime.localeCompare(b.startTime)
+      );
+
+      for (let i = 0; i < sortedSlots.length - 1; i++) {
+        const currentEnd = new Date(`2000-01-01T${sortedSlots[i].endTime}`);
+        const nextStart = new Date(`2000-01-01T${sortedSlots[i + 1].startTime}`);
+        const diffInMinutes = (nextStart.getTime() - currentEnd.getTime()) / 1000 / 60;
+
+        if (diffInMinutes < 30) {
+          toast.error("Time slots must be at least 30 minutes apart for 1:1 events");
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const renderDateTimeSelection = () => (
-    <>
-      <DialogHeader>
-        <DialogTitle className="text-2xl font-semibold">
-          3: Select Dates and Times
+    <>      <DialogHeader>
+        <DialogTitle className="text-xl sm:text-2xl font-semibold">
+          3: Select {formData.type === "1:1" ? "Available Time Slots" : "Dates and Times"}
         </DialogTitle>
-      </DialogHeader>
-      <div className="grid grid-cols-[400px,1fr] gap-8 py-4">
+        {formData.type === "1:1" && (
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+            For 1:1 meetings, select specific time slots that you're available. 
+            Each slot should be at least 30 minutes apart.
+          </p>
+        )}
+      </DialogHeader><div className="flex flex-col lg:grid lg:grid-cols-[400px,1fr] gap-6 lg:gap-8 py-4">
         <div className="space-y-4">
           <Label>Select Dates</Label>
           <Calendar
             mode="multiple"
             selected={formData.dateTimeSlots.map(slot => slot.date)}
             onSelect={handleDateSelect}
-            className="rounded-md border p-3"
+            className="rounded-md border p-3 w-full"
             showOutsideDays={false}
             classNames={{
               months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
@@ -442,23 +484,29 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
               day_hidden: "invisible",
             }}
           />
-        </div>
-        <div className="space-y-6 overflow-y-auto pr-2 max-h-[300px]">
-          <Label>Set Time Slots</Label>
+        </div>        <div className="space-y-4 lg:space-y-6 overflow-y-auto pr-2 max-h-[300px] lg:max-h-[400px]">
+          <Label>
+            {formData.type === "1:1" ? "Available Time Slots" : "Set Time Slots"}
+          </Label>
           {formData.dateTimeSlots.map((dateSlot, dateIndex) => (
-            <div key={dateIndex} className="space-y-4 rounded-lg border p-4">
+            <div key={dateIndex} className="space-y-4 rounded-lg border p-3 sm:p-4">
               <div className="flex items-center justify-between border-b pb-2">
-                <h4 className="font-medium">
+                <h4 className="font-medium text-sm sm:text-base">
                   {format(dateSlot.date, "EEEE, MMMM d")}
                 </h4>
+                {formData.type === "1:1" && (
+                  <span className="text-xs sm:text-sm text-muted-foreground">
+                    {dateSlot.timeSlots.length} slot{dateSlot.timeSlots.length !== 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
               <div className="space-y-4">
                 {dateSlot.timeSlots.map((timeSlot, timeIndex) => (
-                  <div key={timeIndex} className="grid grid-cols-[1fr,1fr,auto] items-end gap-6">
-                    <div className="space-y-2">
-                      <Label>Start Time</Label>
+                  <div key={timeIndex} className="flex flex-col sm:grid sm:grid-cols-[1fr,1fr,auto] items-start sm:items-end gap-3 sm:gap-6">
+                    <div className="space-y-2 w-full">
+                      <Label className="text-xs sm:text-sm">Start Time</Label>
                       <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                         <Input
                           type="time"
                           value={timeSlot.startTime}
@@ -466,20 +514,19 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
                             const newTime = e.target.value;
                             if (!isPastTime(dateSlot.date, newTime)) {
                               handleTimeChange(dateIndex, timeIndex, "startTime", newTime);
+                              validateTimeSlots(dateSlot);
                             } else {
                               toast.error("Cannot select a past time");
                             }
                           }}
-                          className="w-full"
-                          disabled={new Date(dateSlot.date).toDateString() === new Date().toDateString() && 
-                            isPastTime(dateSlot.date, timeSlot.startTime)}
+                          className="w-full text-sm"
                         />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>End Time</Label>
+                    <div className="space-y-2 w-full">
+                      <Label className="text-xs sm:text-sm">End Time</Label>
                       <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                         <Input
                           type="time"
                           value={timeSlot.endTime}
@@ -487,21 +534,20 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
                             const newTime = e.target.value;
                             if (!isPastTime(dateSlot.date, newTime)) {
                               handleTimeChange(dateIndex, timeIndex, "endTime", newTime);
+                              validateTimeSlots(dateSlot);
                             } else {
                               toast.error("Cannot select a past time");
                             }
                           }}
-                          className="w-full"
-                          disabled={new Date(dateSlot.date).toDateString() === new Date().toDateString() && 
-                            isPastTime(dateSlot.date, timeSlot.endTime)}
+                          className="w-full text-sm"
                         />
                       </div>
                     </div>
-                    {dateSlot.timeSlots.length > 1 && (
+                    {(formData.type !== "1:1" || dateSlot.timeSlots.length > 1) && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive w-full sm:w-auto mt-2 sm:mt-0"
                         onClick={() => removeTimeSlot(dateIndex, timeIndex)}
                       >
                         Remove
@@ -509,23 +555,21 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
                     )}
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-2"
-                  onClick={() => addTimeSlot(dateIndex)}
-                >
-                  Add Time Slot
-                </Button>
+                {(!formData.type || formData.type === "group" || 
+                  (formData.type === "1:1" && dateSlot.timeSlots.length < 5)) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => addTimeSlot(dateIndex)}
+                  >
+                    Add Time Slot
+                  </Button>
+                )}
               </div>
             </div>
           ))}
-          {formData.dateTimeSlots.length === 0 && (
-            <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-              Select dates from the calendar to add time slots
-            </div>
-          )}
         </div>
       </div>
     </>

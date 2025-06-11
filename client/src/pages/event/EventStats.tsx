@@ -39,6 +39,7 @@ interface Event {
   status: string;
   location: string;
   event_dates: DateSlot[];
+  event_participant_count: number;
   event_participants: Array<{
     id: string;
     participant_name?: string;
@@ -269,7 +270,7 @@ export default function EventStats() {
           )}
         </div>
 
-        {event.status === "completed" && mostVotedSlot && (
+        {event.status === "completed" && mostVotedSlot && event.type !== "1:1" && (
           <div className="bg-blue-500/10 text-blue-600 px-4 py-3 rounded-md">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />

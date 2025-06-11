@@ -16,14 +16,15 @@ import Profile from "./pages/profile/Profile.tsx";
 import { store } from "./redux/store.ts";
 
 function App() {
-  //const dispatch = useDispatch();
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Provider store={store}>
         <BrowserRouter>
-        <Navbar />
-          <AppRoutes />
+          <div className="min-h-screen bg-background">
+            <Navbar />
+            <AppRoutes />
+          </div>
         </BrowserRouter>
       </Provider>
       <Toaster richColors />
@@ -32,17 +33,6 @@ function App() {
 }
 
 function AppRoutes() {
-  //const location = useLocation();
-
-  // useEffect(() => {
-  //   if (location.pathname === "/login") {
-  //     return;
-  //   }
-  //   if (location.pathname === "/") {
-  //     dispatch(setCurrentUrl("/dashboard"));
-  //   } else dispatch(setCurrentUrl(location.pathname + location.search));
-  // }, [dispatch, location]);
-
   return (
     <Routes>
       {/* Public */}
@@ -50,7 +40,6 @@ function AppRoutes() {
       <Route path="/login" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/event/share/:eventId" element={<EventShare />} />
-      <Route path="/event/status" element={<EventStats />} />
       <Route path="/event/stats/:eventId" element={<EventStats />} />
 
       {/* Kullanıcı giriş yapmadan erişemeyeceği alanlar. */}

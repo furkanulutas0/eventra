@@ -5,9 +5,10 @@ import { Button } from "./ui/button";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onPageChange?: (page: string) => void;
+  onCreateEvent?: () => void;
 }
 
-export function Sidebar({ className, onPageChange }: SidebarProps) {
+export function Sidebar({ className, onPageChange, onCreateEvent }: SidebarProps) {
   const [activePage, setActivePage] = useState("Events")
 
   const menuItems = [
@@ -22,28 +23,34 @@ export function Sidebar({ className, onPageChange }: SidebarProps) {
   }
 
   return (
-    <div className={cn("pb-12 min-h-screen w-60 border-r", className)}>
+    <div className={cn("pb-12 min-h-screen w-48 sm:w-60 border-r bg-background", className)}>
       <div className="space-y-4 py-4">
-        <div className="px-4 py-2">
-          <Button variant="blue" className="w-full" size="lg">
+        <div className="px-3 sm:px-4 py-2">
+          <Button 
+            variant="blue" 
+            className="w-full text-sm sm:text-base" 
+            size="lg"
+            onClick={onCreateEvent}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
-            Create Event
+            <span className="hidden sm:inline">Create Event</span>
+            <span className="sm:hidden">Create</span>
           </Button>
         </div>
-        <div className="px-3 py-2">
+        <div className="px-2 sm:px-3 py-2">
           <div className="space-y-1">
             {menuItems.map((item) => (
               <Button
                 key={item.label}
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start",
+                  "w-full justify-start text-sm sm:text-base",
                   activePage === item.label && "bg-accent text-accent-foreground"
                 )}
                 onClick={() => handleMenuClick(item.label)}
               >
                 <item.icon className="mr-2 h-4 w-4" />
-                {item.label}
+                <span className="hidden sm:inline">{item.label}</span>
               </Button>
             ))}
           </div>
@@ -51,4 +58,4 @@ export function Sidebar({ className, onPageChange }: SidebarProps) {
       </div>
     </div>
   )
-} 
+}

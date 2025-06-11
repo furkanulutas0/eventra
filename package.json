@@ -4,10 +4,16 @@
   "description": "",
   "main": "api/index.js",
   "scripts": {
-    "build": "tsc && pnpm install && cd client && pnpm install && pnpm build",
-    "start": "node dist/index.js",
-    "dev": "nodemon api/index.ts",
-    "postinstall": "cd client && pnpm install"
+    "build": "npm install && npm install --prefix client && npm run build --prefix client",
+    "start": "tsx api/index.ts",
+    "dev": "nodemon --exec \"tsx\" api/index.ts",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:boundary": "tsx tests/run-boundary-tests.ts",
+    "test:boundary:watch": "vitest tests/boundary-value --watch"
   },
   "keywords": [],
   "author": "",
@@ -29,13 +35,26 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "framer-motion": "^11.15.0",
+    "nodemon": "^3.1.10",
     "resend": "^4.0.1",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
-    "@types/node": "^22.10.5",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.3",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "jsdom": "^23.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vitest": "^1.0.0"
   }
 }
