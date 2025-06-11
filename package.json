@@ -37,7 +37,8 @@
     "framer-motion": "^11.15.0",
     "nodemon": "^3.1.10",
     "resend": "^4.0.1",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "esbuild": "0.24.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
