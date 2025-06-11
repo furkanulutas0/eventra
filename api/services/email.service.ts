@@ -12,7 +12,7 @@ export class EmailService {
   ) {
     try {
       const { data, error } = await resend.emails.send({
-        from: 'Eventra <eventra@mail.douloop.com>', // Update with your verified domain
+        from: 'Eventra <eventra@douloop.com>', // Update with your verified domain
         to: recipientEmail,
         subject: `Vote Confirmation - ${eventName}`,
         html: VoteConfirmationEmail({

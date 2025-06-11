@@ -38,22 +38,22 @@ interface Event {
 
 const EmptyEventsState = ({ onCreateEvent }: { onCreateEvent: () => void }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] p-4">
-      <div className="flex flex-col items-center space-y-4 max-w-[400px] text-center">
-        <div className="p-4 rounded-full bg-blue-50 dark:bg-blue-900/20">
-          <Calendar className="w-12 h-12 text-blue-500" />
+    <div className="flex flex-col items-center justify-center min-h-[60vh] sm:min-h-[80vh] p-4">
+      <div className="flex flex-col items-center space-y-4 max-w-[320px] sm:max-w-[400px] text-center">
+        <div className="p-3 sm:p-4 rounded-full bg-blue-50 dark:bg-blue-900/20">
+          <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500" />
         </div>
-        <h3 className="text-2xl font-semibold tracking-tight">No events yet</h3>
-        <p className="text-muted-foreground">
+        <h3 className="text-xl sm:text-2xl font-semibold tracking-tight">No events yet</h3>
+        <p className="text-sm sm:text-base text-muted-foreground">
           You haven't created any events yet. Start by creating your first event!
         </p>
         <Button
           variant="blue"
           size="lg"
           onClick={onCreateEvent}
-          className="mt-4"
+          className="mt-4 w-full sm:w-auto"
         >
-          <PlusCircle className="mr-2 h-5 w-5" />
+          <PlusCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
           Create Your First Event
         </Button>
       </div>
@@ -90,13 +90,12 @@ export default function Dashboard() {
     switch (currentPage) {
       case "events":
         return (
-          <>
-            <header className="border-b">
+          <>            <header className="border-b">
               <div className="flex h-16 items-center px-4 gap-4">
-                <h1 className="text-2xl font-semibold">Events</h1>
+                <h1 className="text-xl sm:text-2xl font-semibold">Events</h1>
               </div>
             </header>
-            <main className="p-4">
+            <main className="p-2 sm:p-4">
               {loading ? (
                 <div className="flex items-center justify-center min-h-[60vh]">
                   <div className="flex items-center gap-2">
@@ -107,7 +106,7 @@ export default function Dashboard() {
               ) : events.length === 0 ? (
                 <EmptyEventsState onCreateEvent={() => setIsCreateModalOpen(true)} />
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-2 sm:p-4">
                   {events.map((event) => (
                     <EventCard
                       key={event.id}
@@ -161,14 +160,33 @@ export default function Dashboard() {
         return null;
     }
   };
-
   return (
     <div className="flex min-h-screen pt-16 bg-background">
-      <Sidebar 
-        onPageChange={setCurrentPage} 
-        onCreateEvent={() => setIsCreateModalOpen(true)}
-      />
-      <div className="flex-1 overflow-auto">{renderContent()}</div>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar 
+          onPageChange={setCurrentPage} 
+          onCreateEvent={() => setIsCreateModalOpen(true)}
+        />
+      </div>
+      
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-background border-b">
+        <div className="flex items-center justify-between p-4">
+          <h1 className="text-xl font-semibold">Dashboard</h1>
+          <Button
+            variant="blue"
+            size="sm"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="gap-2"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Create Event</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto md:mt-0 mt-16">{renderContent()}</div>
       <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

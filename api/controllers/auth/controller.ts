@@ -4,8 +4,33 @@ import errorHandler from "../../utils/middleware/error.handler";
 import { supabase } from "../../utils/supabase";
 
 class AuthController {
+  private validateEmail(email: string): boolean {
+    // Email format validation
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!email || !emailRegex.test(email)) {
+      return false;
+    }
+    // Additional checks
+    if (email.length < 5 || email.length > 255) {
+      return false;
+    }
+    if (email.startsWith('.') || email.endsWith('.')) {
+      return false;
+    }
+    return true;
+  }
+
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password, name, surname } = req.body;
+
+    // Email validation
+    if (!this.validateEmail(email)) {
+      return res.status(400).json({ error: "Geçersiz email formatı!" });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: "Şifre en az 6 karakter olmalı!" });
+    }
 
     const userRequest = {
       email,
@@ -18,7 +43,7 @@ class AuthController {
       const { data: emailData, error: emailError } = await supabase
         .from("users")
         .select("email")
-        .eq("email", userRequest.email);
+        .eq("email", userRequest.email); 
       console.log(emailData);
       if (emailError) throw emailError;
       if (emailData.length > 0) {
@@ -79,6 +104,11 @@ class AuthController {
 
   signIn = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
+
+    // Email validation
+    if (!this.validateEmail(email)) {
+      return res.status(400).json({ error: "Geçersiz email formatı!" });
+    }
 
     const userRequest = {
       email,

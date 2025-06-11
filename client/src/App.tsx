@@ -21,8 +21,10 @@ function App() {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Provider store={store}>
         <BrowserRouter>
-        <Navbar />
-          <AppRoutes />
+          <div className="min-h-screen bg-background">
+            <Navbar />
+            <AppRoutes />
+          </div>
         </BrowserRouter>
       </Provider>
       <Toaster richColors />

@@ -9,9 +9,15 @@
     "outDir": "./dist",
     "rootDir": "./api",
     "baseUrl": ".",
+    "moduleResolution": "node",
     "paths": {
-      "@/*": ["api/*"] // Create the alias
-    },
+      "@/*": ["api/*"]
+    }
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   },
   "include": ["api/**/*.ts"],
   "exclude": ["node_modules"]

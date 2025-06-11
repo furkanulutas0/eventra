@@ -71,36 +71,35 @@ export default function Home() {
             <div className="max-w-4xl mx-auto">
               <div className={`space-y-8 md:space-y-12 text-center transition-all duration-1000 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}>
-                {/* Hero Section */}
-                <div className="space-y-6">
-                  <h1 className="text-4xl md:text-6xl font-bold text-[#1a3b66] dark:text-white leading-tight">
-                    Easy scheduling <br className="hidden md:block" />
+              }`}>                {/* Hero Section */}
+                <div className="space-y-4 sm:space-y-6">
+                  <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-[#1a3b66] dark:text-white leading-tight px-4">
+                    Easy scheduling <br className="hidden sm:block" />
                     <span className="text-blue-500">ahead</span>
                   </h1>
-                  <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+                  <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
                     Join who want to easily book meetings with the scheduling tool.
                   </p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-8 max-w-md mx-auto">
+                <div className="space-y-6 sm:space-y-8 max-w-md mx-auto px-4">
                   <Button 
                     size="lg" 
-                    className="w-full bg-blue-600 hover:bg-blue-700 group transition-all duration-300"
+                    className="w-full bg-blue-600 hover:bg-blue-700 group transition-all duration-300 h-12 sm:h-14 text-sm sm:text-base"
                     asChild
                   >
                     <Link to="/signup">
-                      <Calendar className="mr-2 h-5 w-5" />
+                      <Calendar className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                       Sign up with Email
-                      <ArrowRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                      <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                     </Link>
                   </Button>
 
                   {/* Search Event Section */}
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Or join an event with ID
                     </p>
                     <form onSubmit={handleSearch} className="flex gap-2">
@@ -109,34 +108,32 @@ export default function Home() {
                         placeholder="Enter event ID"
                         value={eventId}
                         onChange={(e) => setEventId(e.target.value)}
-                        className="flex-1 h-12 text-lg"
+                        className="flex-1 h-10 sm:h-12 text-sm sm:text-lg"
                       />
                       <Button 
                         type="submit" 
                         size="lg"
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700 h-10 sm:h-12 px-3 sm:px-4"
                       >
-                        <Search className="h-5 w-5" />
+                        <Search className="h-4 w-4 sm:h-5 sm:w-5" />
                       </Button>
                     </form>
                   </div>
-                </div>
-
-                {/* Features Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+                </div>                {/* Features Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mt-12 sm:mt-16 px-4">
                   {features.map((feature, index) => (
                     <div
                       key={feature.title}
-                      className={`p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/50 transition-all duration-500 hover:-translate-y-1 ${
+                      className={`p-4 sm:p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/50 transition-all duration-500 hover:-translate-y-1 ${
                         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                       }`}
                       style={{
                         transitionDelay: `${index * 100}ms`
                       }}
                     >
-                      <feature.icon className="h-8 w-8 text-blue-500 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-sm text-muted-foreground">{feature.description}</p>
+                      <feature.icon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 mb-3 sm:mb-4 mx-auto sm:mx-0" />
+                      <h3 className="text-base sm:text-lg font-semibold mb-2 text-center sm:text-left">{feature.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left leading-relaxed">{feature.description}</p>
                     </div>
                   ))}
                 </div>

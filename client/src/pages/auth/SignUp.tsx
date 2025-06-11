@@ -58,64 +58,65 @@ export default function SignUp() {
       setLoading(false)
     }
   }
-
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-sm sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <CardHeader className="space-y-2 text-center">
             <div className="flex justify-center mb-3">
               <Image
-                src="/eventra.png"
+                src="eventra.png"
                 alt="Eventra Logo"
-                className="h-36 w-auto"
+                className="h-24 sm:h-32 md:h-36 w-auto"
               />
             </div>
-            <CardTitle className="text-2xl font-semibold">
+            <CardTitle className="text-xl sm:text-2xl font-semibold">
               Create your account
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
+            <CardDescription className="text-muted-foreground text-sm">
               to continue to the best event management platform
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <div className="text-sm text-red-500 text-center">
+              <div className="text-xs sm:text-sm text-red-500 text-center break-words">
                 {error}
               </div>
             )}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
+                <Label htmlFor="firstName" className="text-sm">First name</Label>
                 <Input 
                   id="firstName" 
                   placeholder="Optional"
                   value={formData.firstName}
                   onChange={handleChange}
+                  className="text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
+                <Label htmlFor="lastName" className="text-sm">Last name</Label>
                 <Input 
                   id="lastName" 
                   placeholder="Optional"
                   value={formData.lastName}
                   onChange={handleChange}
+                  className="text-sm"
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
+            </div>            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm">Email address</Label>
               <Input 
                 id="email" 
                 type="email" 
                 required
                 value={formData.email}
                 onChange={handleChange}
+                className="text-sm"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -123,6 +124,7 @@ export default function SignUp() {
                   required
                   value={formData.password}
                   onChange={handleChange}
+                  className="text-sm"
                 />
                 <Button
                   type="button"
@@ -132,26 +134,26 @@ export default function SignUp() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
             </div>
             <Button 
-              className="w-full" 
+              className="w-full text-sm" 
               variant="blue" 
               type="submit"
               disabled={loading}
             >
               {loading ? "Creating account..." : "Continue"}
             </Button>
-            <div className="text-center text-sm">
+            <div className="text-center text-xs sm:text-sm">
               Have an account?{" "}
               <Button 
                 variant="link" 
-                className="p-0 h-auto" 
+                className="p-0 h-auto text-xs sm:text-sm" 
                 type="button"
                 onClick={() => navigate('/login')}
               >

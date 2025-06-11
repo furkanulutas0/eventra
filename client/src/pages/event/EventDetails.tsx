@@ -363,10 +363,9 @@ export default function EventDetails() {
   if (!event) {
     return <div className="flex items-center justify-center min-h-screen">Event not found</div>;
   }
-
   return (
-    <div className="min-h-screen bg-background pt-20 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background pt-16 sm:pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -374,35 +373,36 @@ export default function EventDetails() {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
             onClick={() => navigate('/dashboard')}
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Events
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Back to Events</span>
+            <span className="sm:hidden">Back</span>
           </Button>
         </div>
 
-        <Card className="p-6">
-          <div className="space-y-6">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <h1 className="text-2xl font-semibold tracking-tight">{event.name}</h1>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {event.type === "group" ? <Users2 className="h-4 w-4" /> : null}
+        <Card className="p-4 sm:p-6">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="space-y-1 flex-1 min-w-0">
+                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight break-words">{event.name}</h1>
+                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                  {event.type === "group" ? <Users2 className="h-3 w-3 sm:h-4 sm:w-4" /> : null}
                   <span>{event.type === "group" ? "Group Event" : "One-on-one"}</span>
-                  <span className="px-2">•</span>
+                  <span className="px-1 sm:px-2">•</span>
                   <span className="capitalize">{event.status}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex items-center gap-2"
-                        onClick={copyShareLink}
+                        className="flex items-center gap-2 flex-1 sm:flex-none text-xs sm:text-sm"                        onClick={copyShareLink}
                         disabled={isCopying}>
-                        <Link className={cn("h-4 w-4", isCopying && "animate-pulse")} />
-                        {isCopying ? "Copying..." : "Share"}
+                        <Link className={cn("h-3 w-3 sm:h-4 sm:w-4", isCopying && "animate-pulse")} />
+                        <span className="hidden sm:inline">{isCopying ? "Copying..." : "Share"}</span>
+                        <span className="sm:hidden">{isCopying ? "..." : "Share"}</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -415,8 +415,10 @@ export default function EventDetails() {
                   variant="outline" 
                   size="sm" 
                   onClick={handleShowStats}
+                  className="flex-1 sm:flex-none text-xs sm:text-sm"
                 >
-                  Show Stats
+                  <span className="hidden sm:inline">Show Stats</span>
+                  <span className="sm:hidden">Stats</span>
                 </Button>
 
                 {event.status !== "completed" && (
@@ -424,8 +426,10 @@ export default function EventDetails() {
                     variant="default" 
                     size="sm" 
                     onClick={handleEndPoll}
+                    className="flex-1 sm:flex-none text-xs sm:text-sm"
                   >
-                    End Poll
+                    <span className="hidden sm:inline">End Poll</span>
+                    <span className="sm:hidden">End</span>
                   </Button>
                 )}
                 
@@ -433,6 +437,7 @@ export default function EventDetails() {
                   variant="destructive" 
                   size="sm" 
                   onClick={handleDelete}
+                  className="flex-1 sm:flex-none text-xs sm:text-sm"
                 >
                   Delete
                 </Button>
@@ -440,55 +445,55 @@ export default function EventDetails() {
             </div>
 
             {event.detail && (
-              <p className="text-sm leading-relaxed text-muted-foreground">{event.detail}</p>
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground break-words">{event.detail}</p>
             )}
 
             {event.location && (
-              <div className="flex items-center gap-2 text-sm">
-                <Globe className="h-4 w-4" />
-                <span>{event.location}</span>
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <Globe className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="break-words">{event.location}</span>
               </div>
             )}
           </div>
-        </Card>
+        </Card>        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <Card className="p-4 sm:p-6">
+            {renderStats()}
+          </Card>
 
-        <Card className="p-6">
-          {renderStats()}
-        </Card>
-
-        <Card className="p-6">
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">
-              {event.type === "1:1" ? "Time Slot Availability" : "Availability"}
-            </h2>
-            <div className="space-y-8">
-              {event.event_dates.map((dateSlot) => (
-                <div key={dateSlot.id} className="space-y-3">
-                  <h3 className="flex items-center gap-2 text-sm font-medium">
-                    <Calendar className="h-4 w-4" />
-                    {format(new Date(dateSlot.date), "EEEE, MMMM d, yyyy")}
-                  </h3>
-                  {renderTimeSlots(dateSlot)}
-                </div>
-              ))}
+          <Card className="p-4 sm:p-6">
+            <div className="space-y-4 sm:space-y-6">
+              <h2 className="text-base sm:text-lg font-semibold">
+                {event.type === "1:1" ? "Time Slot Availability" : "Availability"}
+              </h2>
+              <div className="space-y-6 sm:space-y-8 max-h-[400px] overflow-y-auto">
+                {event.event_dates.map((dateSlot) => (
+                  <div key={dateSlot.id} className="space-y-3">
+                    <h3 className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="break-words">{format(new Date(dateSlot.date), "EEEE, MMMM d, yyyy")}</span>
+                    </h3>
+                    {renderTimeSlots(dateSlot)}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-base sm:text-lg font-semibold">
               Participants ({event.event_participants.length})
             </h2>
-            <div className="divide-y">
+            <div className="divide-y max-h-[300px] overflow-y-auto">
               {event.event_participants.map((participant) => (
-                <div key={participant.id} className="py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                <div key={participant.id} className="py-3 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs sm:text-sm flex-shrink-0">
                       {participant.is_anonymous ? "A" : (participant.participant_name?.[0] || participant.user?.name?.[0] || "?")}
                     </div>
-                    <div>
-                      <div className="font-medium">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-xs sm:text-sm truncate">
                         {participant.is_anonymous
                           ? "Anonymous"
                           : (participant.participant_name || participant.user?.name || "Unknown")}

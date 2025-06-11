@@ -101,69 +101,67 @@ export function EventCard({
     }
     return `${count} participant${count !== 1 ? 's' : ''}`;
   };
-
   return (
     <>
-      <Card className="hover:shadow-md dark:hover:shadow-gray-800 transition-shadow group max-w-sm">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
+      <Card className="hover:shadow-md dark:hover:shadow-gray-800 transition-shadow group w-full max-w-sm mx-auto sm:mx-0">
+        <CardHeader className="pb-3 sm:pb-6">
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1 flex-1 min-w-0">
+              <CardTitle className="text-lg sm:text-xl group-hover:text-blue-600 transition-colors truncate">
                 {title}
               </CardTitle>
               <div className="flex items-center gap-2">
                 {type === "1:1" ? (
-                  <User className="h-4 w-4 text-blue-600" />
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
                 ) : (
-                  <Users2 className="h-4 w-4 text-blue-600" />
+                  <Users2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
                 )}
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground truncate">
                   {type === "1:1" ? "One-on-one Event" : "Group Event"}
                 </span>
               </div>
             </div>
             <div className={cn(
-              "px-2.5 py-0.5 rounded-full text-xs font-medium",
+              "px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium flex-shrink-0",
               statusColors[status]
             )}>
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </div>
           </div>
-          <CardDescription className="line-clamp-2">{description}</CardDescription>
+          <CardDescription className="line-clamp-2 text-sm">{description}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-4">
+        <CardContent className="pt-0">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm gap-2">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 <div className="flex items-center text-muted-foreground">
-                  <Clock3 className="mr-2 h-4 w-4" />
-                  <span>{formatDuration(duration)}</span>
+                  <Clock3 className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">{formatDuration(duration)}</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
-                  <Users2 className="mr-2 h-4 w-4" />
-                  <span>{getParticipantDisplay()}</span>
+                  <Users2 className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">{getParticipantDisplay()}</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3 text-sm text-muted-foreground border-t pt-4">
+            <div className="space-y-2 sm:space-y-3 text-sm text-muted-foreground border-t pt-3 sm:pt-4">
               {location && (
                 <div className="flex items-center">
-                  <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                  <span>{location}</span>
+                  <MapPin className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm truncate">{location}</span>
                 </div>
-              )}
-              {dateTimeSlots.length > 0 && (
+              )}              {dateTimeSlots.length > 0 && (
                 <div className="space-y-2">
                   {dateTimeSlots.slice(0, 2).map((slot, index) => (
-                    <div key={index} className="flex items-center gap-4">
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                       <div className="flex items-center">
-                        <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                        <span>{format(new Date(slot.date), "MMM d, yyyy")}</span>
+                        <CalendarIcon className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">{format(new Date(slot.date), "MMM d, yyyy")}</span>
                       </div>
                       <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4 shrink-0" />
-                        <span>
+                        <Clock className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">
                           {slot.timeSlots.length === 1 
                             ? `${slot.timeSlots[0].startTime} - ${slot.timeSlots[0].endTime}`
                             : `${slot.timeSlots.length} time slots`
@@ -173,7 +171,7 @@ export function EventCard({
                     </div>
                   ))}
                   {dateTimeSlots.length > 2 && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       +{dateTimeSlots.length - 2} more dates
                     </div>
                   )}
@@ -183,11 +181,11 @@ export function EventCard({
 
             <Button 
               variant="ghost" 
-              className="w-full justify-between hover:bg-blue-50 dark:hover:bg-blue-950/50 group/button"
+              className="w-full justify-between hover:bg-blue-50 dark:hover:bg-blue-950/50 group/button text-sm"
               onClick={handleViewDetails}
             >
               View Details
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover/button:text-blue-600 transition-colors" />
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground group-hover/button:text-blue-600 transition-colors" />
             </Button>
           </div>
         </CardContent>
