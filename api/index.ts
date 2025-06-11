@@ -1,4 +1,4 @@
-﻿
+
 import express, { Express } from "express";
 import authRouter from "./routes/auth/authRouter";
 import eventRouter from "./routes/event/eventRouter";

@@ -67,7 +67,7 @@ export function Navbar() {
     <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
       <div className="flex h-16 items-center px-4 lg:px-6 max-w-full">
         <Image 
-          src="../../public/eventra.png" 
+          src="eventra.png" 
           alt="Eventra Logo" 
           onClick={() => navigate('/')} 
           className="h-16 sm:h-20 md:h-24 w-auto cursor-pointer" 
