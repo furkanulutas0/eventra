@@ -169,7 +169,7 @@ export default function EventDetails() {
     try {
       if (event.type === "1:1") {
         // For 1:1 events, collect all booked slots
-        const bookedSlots = event.event_dates.flatMap(date => 
+        const bookedSlots = event?.event_dates.flatMap(date => 
           date.event_time_slots
             .filter(slot => slot.participants && slot.participants.length > 0)
             .map(slot => ({
@@ -179,7 +179,7 @@ export default function EventDetails() {
             }))
         );
 
-        if (bookedSlots.length === 0) {
+        if (bookedSlots?.length === 0) {
           toast.error("No time slots have been booked yet");
           return;
         }

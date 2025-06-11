@@ -199,6 +199,28 @@ export class EventController {
 
       if (error) throw error;
 
+      // If the event is marked as completed, send a notification email to all participants
+      if (status === 'completed') {
+        const { data: participants, error: participantsError } = await supabase
+          .from("event_participants")
+          .select("participant_email, participant_name")
+          .eq("event_id", event_id)
+          .eq("is_anonymous", false);
+
+        if (participantsError) throw participantsError;
+
+        // Send notification email to each participant
+        for (const participant of participants) {
+          if (participant.participant_email) {
+            await EmailService.sendEventCompletionNotification(
+              participant.participant_email,
+              participant.participant_name,
+              data.name
+            );
+          }
+        }
+      }
+
       res.status(200).json({
         message: "Event status updated successfully",
         data
