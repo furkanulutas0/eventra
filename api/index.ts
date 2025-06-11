@@ -1,3 +1,4 @@
+﻿import { dotenv } from 'dotenv';
 
 import express, { Express } from "express";
 import authRouter from "./routes/auth/authRouter";
@@ -8,9 +9,10 @@ import errorHandler from "./utils/middleware/error.handler"; // Import the error
 import path from "path";
 
 // Create a single supabase client for interacting with your database
-
+dotenv.config();
+// Initialize Express app
 const app: Express = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const router = express.Router();
 const __dirname = path.resolve();
 
