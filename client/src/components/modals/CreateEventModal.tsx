@@ -439,8 +439,8 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
             Each slot should be at least 30 minutes apart.
           </p>
         )}
-      </DialogHeader><div className="flex flex-col lg:grid lg:grid-cols-[400px,1fr] gap-6 lg:gap-8 py-4">
-        <div className="space-y-4">
+      </DialogHeader>      <div className="flex flex-col lg:grid lg:grid-cols-[400px,1fr] gap-6 lg:gap-8 py-4 min-h-0">
+        <div className="space-y-4 flex-shrink-0">
           <Label>Select Dates</Label>
           <Calendar
             mode="multiple"
@@ -484,7 +484,7 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
               day_hidden: "invisible",
             }}
           />
-        </div>        <div className="space-y-4 lg:space-y-6 overflow-y-auto pr-2 max-h-[300px] lg:max-h-[400px]">
+        </div>        <div className="space-y-4 lg:space-y-6 overflow-y-auto flex-1">
           <Label>
             {formData.type === "1:1" ? "Available Time Slots" : "Set Time Slots"}
           </Label>
@@ -581,8 +581,7 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
         <DialogTitle className="text-2xl font-semibold">
           4: Review Event Details
         </DialogTitle>
-      </DialogHeader>
-      <div className="space-y-6 py-4 max-h-[500px] overflow-y-auto">
+      </DialogHeader>      <div className="space-y-6 py-4">
         {/* Event Type */}
         <div className="space-y-2">
           <h3 className="font-medium text-sm text-muted-foreground">Event Type</h3>
@@ -664,10 +663,9 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
         return null
     }
   }
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[1000px]">
+      <DialogContent className="sm:max-w-[1000px] max-h-[90vh] flex flex-col p-0">
         {isLoading && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="flex flex-col items-center gap-2">
@@ -697,8 +695,9 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
             </div>
           </div>
         )}
-        {renderStepContent()}
-        <div className="flex justify-end gap-4">
+        <div className="flex-1 overflow-y-auto p-6">
+          {renderStepContent()}
+        <div className="flex-shrink-0 flex justify-end gap-4 p-6 border-t dark:bg-black bg-white sticky bottom-0">
           {step > 1 && (
             <Button variant="outline" onClick={handleBack}>
               Back
@@ -710,10 +709,11 @@ export function CreateEventModal({ isOpen, onClose, onEventCreated }: CreateEven
           <Button
             disabled={isNextDisabled() || isLoading}
             onClick={handleNext}
-          >
+            >
             {step === 4 ? "Create Event" : "Next"}
           </Button>
         </div>
+            </div>        
       </DialogContent>
     </Dialog>
   )
